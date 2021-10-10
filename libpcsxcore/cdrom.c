@@ -48,6 +48,13 @@ cdrStruct cdr;
 static unsigned char *pTransfer;
 static s16 read_buf[CD_FRAMESIZE_RAW/2];
 
+/* Gameblabla - Workaround hack for CDROM timing patch.
+ * Remove these once there is a proper fix. TODO
+ * See this for more details : https://github.com/grumpycoders/pcsx-redux/issues/643#issuecomment-939613784
+ * */
+#define CD_DELAY_LOC 30
+#define SECTOR_DELAY 70
+
 /* CD-ROM magic numbers */
 #define CdlSync        0 /* nocash documentation : "Uh, actually, returns error code 40h = Invalid Command...?" */
 #define CdlNop         1
@@ -492,6 +499,7 @@ static void cdrPlayInterrupt_Autopause()
 // also handles seek
 void cdrPlayInterrupt()
 {
+	int sector_diff;
 	if (cdr.Seeked == SEEK_PENDING) {
 		if (cdr.Stat) {
 			CDR_LOG_I("cdrom: seek stat hack\n");
@@ -509,9 +517,13 @@ void cdrPlayInterrupt()
 		}
 
 		if (cdr.SetlocPending) {
+			sector_diff = abs(msf2sec(cdr.SetSector) - msf2sec(cdr.SetSectorPlay));
+			if (sector_diff < SECTOR_DELAY || sector_diff == 0)
+			{
+				cdr.m_locationChanged = TRUE;
+			}
 			memcpy(cdr.SetSectorPlay, cdr.SetSector, 4);
 			cdr.SetlocPending = 0;
-			cdr.m_locationChanged = TRUE;
 		}
 		Find_CurTrack(cdr.SetSectorPlay);
 		ReadTrack(cdr.SetSectorPlay);
@@ -551,7 +563,7 @@ void cdrPlayInterrupt()
 
 	if (cdr.m_locationChanged)
 	{
-		CDRMISC_INT(cdReadTime * 30);
+		CDRMISC_INT(cdReadTime * CD_DELAY_LOC);
 		cdr.m_locationChanged = FALSE;
 	}
 	else
@@ -570,6 +582,7 @@ void cdrInterrupt() {
 	int error = 0;
 	int delay;
 	unsigned int seekTime = 0;
+	int sector_diff;
 
 	// Reschedule IRQ
 	if (cdr.Stat) {
@@ -617,9 +630,13 @@ void cdrInterrupt() {
 			cdr.FastForward = 0;
 
 			if (cdr.SetlocPending) {
+				sector_diff = abs(msf2sec(cdr.SetSector) - msf2sec(cdr.SetSectorPlay));
+				if (sector_diff > SECTOR_DELAY || sector_diff == 0)
+				{
+					cdr.m_locationChanged = TRUE;
+				}
 				memcpy(cdr.SetSectorPlay, cdr.SetSector, 4);
 				cdr.SetlocPending = 0;
-				cdr.m_locationChanged = TRUE;
 			}
 
 			// BIOS CD Player
@@ -969,10 +986,17 @@ void cdrInterrupt() {
 				* It seems that 3386880 * 5 is too much for Driver's titlescreen and it starts skipping.
 				* However, 1000000 is not enough for Worms Pinball to reliably boot.
 				*/
-				if(seekTime > 3386880 * 2) seekTime = 3386880 * 2;
+				if(seekTime > 3386880 * 2)
+				{
+					seekTime = 3386880 * 2;
+				}
+				sector_diff = abs(msf2sec(cdr.SetSector) - msf2sec(cdr.SetSectorPlay));
+				if (sector_diff > SECTOR_DELAY || sector_diff == 0)
+				{
+					cdr.m_locationChanged = TRUE;
+				}
 				memcpy(cdr.SetSectorPlay, cdr.SetSector, 4);
 				cdr.SetlocPending = 0;
-				cdr.m_locationChanged = TRUE;
 			}
 			Find_CurTrack(cdr.SetSectorPlay);
 
@@ -1180,6 +1204,7 @@ void cdrReadInterrupt() {
 			 (cdr.Transfer[4 + 0] == cdr.File) && cdr.Channel != 255) {
 			int ret = xa_decode_sector(&cdr.Xa, cdr.Transfer+4, cdr.FirstSector);
 			if (!ret) {
+				cdr.m_locationChanged = FALSE;
 				cdrAttenuate(cdr.Xa.pcm, cdr.Xa.nsamples, cdr.Xa.stereo);
 				SPU_playADPCMchannel(&cdr.Xa);
 				cdr.FirstSector = 0;
@@ -1202,7 +1227,7 @@ void cdrReadInterrupt() {
 
 	uint32_t delay = (cdr.Mode & MODE_SPEED) ? (cdReadTime / 2) : cdReadTime;
 	if (cdr.m_locationChanged) {
-		CDREAD_INT(delay * 30);
+		CDREAD_INT(delay * CD_DELAY_LOC);
 		cdr.m_locationChanged = FALSE;
 	} else {
 		CDREAD_INT(delay);
