@@ -45,7 +45,7 @@
 #include <streams/file_stream_transforms.h>
 #endif
 
-#ifdef _3DS
+#ifdef __3DS__
 #include "3ds/3ds_utils.h"
 #endif
 
@@ -315,7 +315,7 @@ out:
    pl_rearmed_cbs.flip_cnt++;
 }
 
-#ifdef _3DS
+#ifdef __3DS__
 typedef struct
 {
    void *buffer;
@@ -1951,7 +1951,7 @@ static void update_variables(bool in_flight)
       bool can_use_dynarec = 1;
 #endif
 
-#ifdef _3DS
+#ifdef __3DS__
       if (!__ctr_svchax)
          Config.Cpu = CPU_INTERPRETER;
       else
@@ -2995,7 +2995,7 @@ void retro_init(void)
    syscall(SYS_ptrace, 0 /*PTRACE_TRACEME*/, 0, 0, 0);
 #endif
 
-#ifdef _3DS
+#ifdef __3DS__
    psxMapHook = pl_3ds_mmap;
    psxUnmapHook = pl_3ds_munmap;
 #endif
@@ -3006,7 +3006,7 @@ void retro_init(void)
    psxUnmapHook = pl_vita_munmap;
 #endif
    ret = emu_core_preinit();
-#ifdef _3DS
+#ifdef __3DS__
    /* emu_core_preinit sets the cpu to dynarec */
    if (!__ctr_svchax)
       Config.Cpu = CPU_INTERPRETER;
@@ -3020,7 +3020,7 @@ void retro_init(void)
       exit(1);
    }
 
-#ifdef _3DS
+#ifdef __3DS__
    vout_buf = linearMemAlign(VOUT_MAX_WIDTH * VOUT_MAX_HEIGHT * 2, 0x80);
 #elif defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200112L) && !defined(VITA) && !defined(__SWITCH__)
    if (posix_memalign(&vout_buf, 16, VOUT_MAX_WIDTH * VOUT_MAX_HEIGHT * 2) != 0)
@@ -3050,7 +3050,7 @@ void retro_init(void)
     * we have to do this because cache misses and some IO penalties
     * are not emulated. Warning: changing this may break compatibility. */
    cycle_multiplier = 175;
-#if defined(HAVE_PRE_ARMV7) && !defined(_3DS)
+#if defined(HAVE_PRE_ARMV7) && !defined(__3DS__)
    cycle_multiplier = 200;
 #endif
    pl_rearmed_cbs.gpu_peops.iUseDither = 1;
@@ -3077,7 +3077,7 @@ void retro_deinit(void)
       plugins_opened = 0;
    }
    SysClose();
-#ifdef _3DS
+#ifdef __3DS__
    linearFree(vout_buf);
 #else
    free(vout_buf);

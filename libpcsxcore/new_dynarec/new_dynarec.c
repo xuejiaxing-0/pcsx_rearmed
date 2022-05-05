@@ -26,7 +26,7 @@
 #ifdef __MACH__
 #include <libkern/OSCacheControl.h>
 #endif
-#ifdef _3DS
+#ifdef __3DS__
 #include <3ds_utils.h>
 #endif
 
@@ -449,7 +449,7 @@ static void end_tcache_write(void *start, void *end)
   sys_cache_control(kCacheFunctionPrepareForExecution, start, len);
   #elif defined(VITA)
   sceKernelSyncVMDomain(sceBlock, start, len);
-  #elif defined(_3DS)
+  #elif defined(__3DS__)
   ctr_flush_invalidate_cache();
   #elif defined(__aarch64__)
   // as of 2021, __clear_cache() is still broken on arm64
@@ -6112,7 +6112,7 @@ void new_dynarec_init(void)
 {
   SysPrintf("Init new dynarec, ndrc size %x\n", (int)sizeof(*ndrc));
 
-#ifdef _3DS
+#ifdef __3DS__
   check_rosalina();
 #endif
 #ifdef BASE_ADDR_DYNAMIC

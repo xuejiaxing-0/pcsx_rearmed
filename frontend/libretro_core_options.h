@@ -203,7 +203,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "pcsx_rearmed_psxclock",
       "PSX CPU Clock Speed",
       NULL,
-#if defined(HAVE_PRE_ARMV7) && !defined(_3DS)
+#if defined(HAVE_PRE_ARMV7) && !defined(__3DS__)
       "Overclock or under-clock the PSX CPU. Lower values may reduce performance requirements while higher values may improve frame rates in demanding games at the expense of increased overheads; setting the value too low or high may reduce compatibility. Default is 50.",
 #else
       "Overclock or under-clock the PSX CPU. Lower values may reduce performance requirements while higher values may improve frame rates in demanding games at the expense of increased overheads; setting the value too low or high may reduce compatibility. Default is 57.",
@@ -284,7 +284,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
          { "100", NULL },
          { NULL, NULL },
       },
-#if defined(HAVE_PRE_ARMV7) && !defined(_3DS)
+#if defined(HAVE_PRE_ARMV7) && !defined(__3DS__)
       "50",
 #else
       "57",
@@ -303,7 +303,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
          { "enabled",  NULL },
          { NULL, NULL },
       },
-#if defined HAVE_LIBNX || defined _3DS
+#if defined HAVE_LIBNX || defined __3DS__
       "disabled",
 #else
       "enabled",

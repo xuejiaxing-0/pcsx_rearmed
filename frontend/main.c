@@ -153,7 +153,7 @@ void emu_set_default_config(void)
 	spu_config.iVolume = 768;
 	spu_config.iTempo = 0;
 	spu_config.iUseThread = 1; // no effect if only 1 core is detected
-#if defined(HAVE_PRE_ARMV7) && !defined(_3DS) /* XXX GPH hack */
+#if defined(HAVE_PRE_ARMV7) && !defined(__3DS__) /* XXX GPH hack */
 	spu_config.iUseReverb = 0;
 	spu_config.iUseInterpolation = 0;
 #ifndef HAVE_LIBRETRO
@@ -784,7 +784,7 @@ int emu_save_state(int slot)
 		return ret;
 
 	ret = SaveState(fname);
-#if defined(HAVE_PRE_ARMV7) && !defined(_3DS) && !defined(__SWITCH__) /* XXX GPH hack */
+#if defined(HAVE_PRE_ARMV7) && !defined(__3DS__) && !defined(__SWITCH__) /* XXX GPH hack */
 	sync();
 #endif
 	SysPrintf("* %s \"%s\" [%d]\n",

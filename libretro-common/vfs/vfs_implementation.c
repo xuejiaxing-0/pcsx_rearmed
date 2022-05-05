@@ -446,7 +446,7 @@ libretro_vfs_implementation_file *retro_vfs_file_open_impl(
        */
       /* TODO: this is only useful for a few platforms, 
        * find which and add ifdef */
-#if defined(_3DS)
+#if defined(__3DS__)
       if (stream->scheme != VFS_SCHEME_CDROM)
       {
          stream->buf = (char*)calloc(1, 0x10000);
@@ -1029,7 +1029,7 @@ int retro_vfs_stat_impl(const char *path, int32_t *size)
 
 #if defined(VITA)
 #define path_mkdir_error(ret) (((ret) == SCE_ERROR_ERRNO_EEXIST))
-#elif defined(PSP) || defined(PS2) || defined(_3DS) || defined(WIIU) || defined(SWITCH) || defined(ORBIS)
+#elif defined(PSP) || defined(PS2) || defined(__3DS__) || defined(WIIU) || defined(SWITCH) || defined(ORBIS)
 #define path_mkdir_error(ret) ((ret) == -1)
 #else
 #define path_mkdir_error(ret) ((ret) < 0 && errno == EEXIST)
@@ -1189,7 +1189,7 @@ libretro_vfs_implementation_dir *retro_vfs_opendir_impl(
 
 #elif defined(VITA) || defined(PSP)
    rdir->directory       = sceIoDopen(name);
-#elif defined(_3DS)
+#elif defined(__3DS__)
    rdir->directory       = !string_is_empty(name) ? opendir(name) : NULL;
    rdir->entry           = NULL;
 #elif defined(__CELLOS_LV2__) && !defined(__PSL1GHT__)

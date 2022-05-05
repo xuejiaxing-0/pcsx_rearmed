@@ -69,9 +69,9 @@ static void *video_thread_main(void *arg) {
 	video_thread_cmd *cmd;
 	int i;
 
-#ifdef _3DS
+#ifdef __3DS__
 	static int processed = 0;
-#endif /* _3DS */
+#endif /* __3DS__ */
 
 	while(1) {
 		int result, last_cmd, start, end;
@@ -101,14 +101,14 @@ static void *video_thread_main(void *arg) {
 				fprintf(stderr, "Processed wrong cmd count: expected %d, got %d\n", cmd->count, result);
 			}
 
-#ifdef _3DS
+#ifdef __3DS__
 			/* Periodically yield so as not to starve other threads */
 			processed += cmd->count;
 			if (processed >= 512) {
 				svcSleepThread(1);
 				processed %= 512;
 			}
-#endif /* _3DS */
+#endif /* __3DS__ */
 		}
 
 		pthread_mutex_lock(&thread->queue_lock);
